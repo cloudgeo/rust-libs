@@ -60,7 +60,7 @@ pub struct FileEntry {
 }
 
 #[async_trait]
-pub trait FileProvider {    
+pub trait FileProvider : Send + Sync {    
     async fn write(&self, path: &str, content: &str) -> Result<(), Error>;
     async fn write_file(&self, path: String, contents: Vec<u8>) -> Result<(), Error>;
     async fn read_file_buffer(&self, path: &str) -> Result<Box<dyn BufRead>, Error>;
