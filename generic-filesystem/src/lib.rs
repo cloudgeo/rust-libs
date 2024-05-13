@@ -200,13 +200,24 @@ impl FileProvider for AwsS3FileProvider {
     async fn read_file_buffer(&self, path: &str) -> Result<Box<dyn BufRead>, Error> {
         let resp = match self.client.get_object().bucket(self.bucket.clone()).key(path).send().await {
             Ok(out) => out,
-            Err(e) => return Err(Error::new(e.to_string().as_ref())),
+            Err(e) => {
+                eprintln!("Failure reading the file buffer: {:?}, Bucket: {}, Key: {}", e, self.bucket, path);
+                return Err(Error::new(e.to_string().as_ref()));
+            }
         };
 
-        let data = resp.body.collect().await.unwrap().to_vec();
-        let buf = BufReader::new(Cursor::new(data));
+        match resp.body.collect().await {
+            Ok(out) => {
+                let data = out.to_vec();
+                let buf = BufReader::new(Cursor::new(data));
 
-        Ok(Box::new(buf))
+                return Ok(Box::new(buf));
+            },
+            Err(e) => {
+                eprintln!("Failure decoding the file buffer: {:?}", e);
+                return Err(Error::new(e.to_string().as_ref()));
+            }
+        };
     }
 
     async fn move_file(&self, file_name: &str, ending_path: &str, delete: bool) -> Result<(), Error> {
