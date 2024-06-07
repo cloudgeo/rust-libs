@@ -304,7 +304,14 @@ impl FileProvider for AwsS3FileProvider {
     }
 
     async fn delete_file(&self, path: &str) -> Result<(), Error> {
-        unimplemented!()
+        self.client
+        .delete_object()
+        .bucket(&self.bucket)
+        .key(path)
+        .send()
+        .await?;
+
+        Ok(())
     }
 
     async fn create_dir(&self, path: &str) -> Result<(), Error> {
