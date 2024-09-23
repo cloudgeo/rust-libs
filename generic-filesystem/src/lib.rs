@@ -315,7 +315,8 @@ impl FileProvider for AwsS3FileProvider {
     }
 
     async fn create_dir(&self, path: &str) -> Result<(), Error> {
-        unimplemented!()
+        // This returns okay because S3 doesn't have directories. It'll just create the file in the "tree".
+        return Ok(());
     }
 
     fn get_base_path(&self) -> &str {
